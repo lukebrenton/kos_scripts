@@ -29,13 +29,13 @@ set v2_speed to 110.
 set takeoff_pitch to 15.
  
 // Initial ascent in pitch-degrees (0m - target_altitude) (must be greater than takeoff pitch)
-set initial_pitch to 15.
+set initial_pitch to 25.
  
 // Target altitude in m to gain speed (must be above 1500m!)
 set target_altitude to 10000.
 
 // Speed gain pitch
-set speed_gain_pitch to 15.
+set speed_gain_pitch to 12.
 
 // Maximum target apoapsis height
 set target_apoapsis to 100000.
