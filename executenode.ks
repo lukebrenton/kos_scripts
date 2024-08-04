@@ -1,7 +1,11 @@
+// todo: make sure at least 1 engine is active before commencing script
+// breaks otherwise
+// make sure sas is OFF
+
 RUNONCEPATH("0:/lib/lib_safe.ks").
 RUNONCEPATH("0:/lib/lib_engines.ks", "all").
 RUNONCEPATH("0:/lib/lib_utils.ks").
-parameter safe_mode.
+parameter safe_mode is false.
 // safe mode will turn off ion engines if electric charge gets below 10%.
 
 SAFE_TAKEOVER().

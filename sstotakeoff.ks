@@ -1,20 +1,5 @@
 CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
-CLEARSCREEN.
-print " ".
-print "**************************************************".
-print "**                                              **".
-print "**                                              **".
-print "**            SSTO Launch-script v0.1           **".
-print "**                                              **".
-print "**                                              **".
-print "**               (c)        2021                **".
-print "**                License: GPLv3                **".
-print "**                                              **".
-print "**                                              **".
-print "**************************************************".
-print " ".
-print " ".
- 
+clearGuis().
 // ******************************************************************** //
 // ********************** VARIABLE-DECLARATIONS *********************** //
 // ******************************************************************** //
@@ -29,38 +14,101 @@ set v2_speed to 110.
 set takeoff_pitch to 15.
  
 // Initial ascent in pitch-degrees (0m - target_altitude) (must be greater than takeoff pitch)
-set initial_pitch to 15.
+set initial_pitch to 25.
  
 // Target altitude in m to gain speed (must be above 1500m!)
 set target_altitude to 10000.
 
 // Speed gain pitch
-set speed_gain_pitch to 15.
+set speed_gain_pitch to 12.
 
 // Maximum target apoapsis height
 set target_apoapsis to 100000.
  
 // ******************************************************************** //
 // *** SCRIPT - DO NOT MODIFY UNLESS YOU KNOW WHAT YOU ARE DOING ;) *** //
-// ******************************************************************** //
+// *************************************F******************************* //
 
+function showmessage {
+  parameter message.
+  clearscreen.
+  print "**************************************************".
+  print "**                                              **".
+  print "**                                              **".
+  print "**            SSTO Launch-script v0.1           **".
+  print "**                                              **".
+  print "**                                              **".
+  print "**               (c)        2021                **".
+  print "**                License: GPLv3                **".
+  print "**                                              **".
+  print "**                                              **".
+  print "**************************************************".
+  print " ".
+  print " ".
+  print message.
+  print " ".
+}
+
+showMessage("Flight instructions and checklist here. Click confirm.").
+set disclaimerRead to false.
+LOCAL confirm_gui IS GUI(200).
+set confirm_gui:y to 600.
+set confirm_gui:x to 850.
+LOCAL confirm_button TO confirm_gui:ADDBUTTON("CONFIRM").
+confirm_gui:SHOW().
+SET confirm_button:ONCLICK TO {set disclaimerRead to true.}.
+
+wait until disclaimerRead.
+confirm_gui:HIDE().
+confirm_gui:DISPOSE().
+print("Program commencing...").
+wait 1.
+
+set setupFinished to false.
+
+showMessage("Initial pitch: " + initial_pitch + ". Target Apoapsis: " + target_apoapsis).
+
+LOCAL takeoff_gui IS GUI(200).
+set takeoff_gui:y to 600.
+set takeoff_gui:x to 850.
+LOCAL initial_pitch_label TO takeoff_gui:ADDLABEL("Initial pitch:").
+LOCAL initial_pitch_textfield TO takeoff_gui:ADDTEXTFIELD(initial_pitch:tostring).
+LOCAL target_apoapsis_label TO takeoff_gui:ADDLABEL("Target apoapsis:").
+LOCAL target_apoapsis_textfield TO takeoff_gui:ADDTEXTFIELD(target_apoapsis:tostring).
+LOCAL confirm_button TO takeoff_gui:ADDBUTTON("CONFIRM").
+takeoff_gui:SHOW().
+set initial_pitch_textfield:ONCHANGE to {
+    parameter str.
+    set initial_pitch to str:toscalar.
+    showMessage("Initial pitch: " + initial_pitch + ". Target Apoapsis: " + target_apoapsis).
+}.
+set target_apoapsis_textfield:ONCHANGE to {
+    parameter str.
+    set target_apoapsis to str:toscalar.
+    showMessage("Initial pitch: " + initial_pitch + ". Target Apoapsis: " + target_apoapsis).
+}.
+SET confirm_button:ONCLICK TO {set setupFinished to true.}.
+
+wait until setupFinished.
+takeoff_gui:HIDE().
+takeoff_gui:DISPOSE().
+print("Program commencing...").
+wait 1.
  
-print "Initiating launch.".
- 
-print " ".
- 
+showMessage("Initiating launch.").
+
 set airborn to 100.
  
 // Countdown
-print "IGNITION IN... T-".
+ShowMessage("IGNITION IN... T-").
 from {local countdown is 5.} until countdown = 0 step {set countdown to countdown - 1.} do {
-    print countdown + " " at (17,16).
+    showMessage(countdown).
     wait 1.0.
 }
-print 0 + " " AT (17,16).
+showMessage("0").
 wait 0.2.
 lock THROTTLE to 1.0.
-print "*** IGNITION ***".
+showMessage("*** IGNITION ***").
 startRapiers().
  
 
@@ -75,17 +123,16 @@ lock STEERING to HEADING(90.42, initialPitch). // Runway seems to be a bit off 9
 until SHIP:VELOCITY:SURFACE:MAG > v1_speed {
     wait 0.1.
 }
-print "V1.".
+showMessage("V1.").
 until SHIP:VELOCITY:SURFACE:MAG > v2_speed {
     wait 0.1.
 }
-print "V2.".
-print "Rotate.".
+showMessage("Rotate").
 lock STEERING to HEADING(90, takeoff_pitch).
 until SHIP:ALTITUDE > airborn {
     wait 0.1.
 }
-print "Gear up.".
+showMessage("Gear up.").
 GEAR off.
 
 
@@ -98,7 +145,7 @@ GEAR off.
 //
 //
 //
-print "Setting initial climb pitch.".
+showMessage("Setting initial climb pitch.").
 lock STEERING to HEADING(90, initial_pitch).
 
 
@@ -115,7 +162,7 @@ lock STEERING to HEADING(90, initial_pitch).
 until SHIP:ALTITUDE > target_altitude {
     wait 0.1.
 }
-print "Pitching down for speed gain.".
+showMessage("Pitching down for speed gain.").
 lock STEERING to HEADING(90, speed_gain_pitch).
 
 
@@ -140,7 +187,7 @@ if (not nukes_active) {
 	set nukes_active to True.
 	wait 1.
 }
-print "Switching rapiers to closed cycle and closing air intakes.".
+showMessage("Switching rapiers to closed cycle and closing air intakes.").
 toogleRapierMode().
 toggle INTAKES.
 wait 1.
@@ -161,7 +208,7 @@ until (SHIP:APOAPSIS > target_apoapsis) {
 	if SHIP:APOAPSIS > 50000 {
 		if (apo_higher_than_50000 = false) {
 			lock STEERING to SHIP:PROGRADE.
-			print "Pitching prograde.".
+			showMessage("Pitching prograde.").
 			set apo_higher_than_50000 to true.
 		}
 		
@@ -169,7 +216,7 @@ until (SHIP:APOAPSIS > target_apoapsis) {
 
 	if SHIP:OXIDIZER = 0 {
 		if (oxidiser_out = false) {
-			print "All oxidizer consumed. Switching rapiers off.".
+			showMessage("All oxidizer consumed. Switching rapiers off.").
 			shutdownRapiers().
 			set oxidiser_out to true.
 		}
@@ -178,7 +225,7 @@ until (SHIP:APOAPSIS > target_apoapsis) {
 	wait 0.1.
 }
 lock throttle to 0.
-print "Apoapsis reached. Preparing to circularize".
+showMessage("Apoapsis reached. Preparing to circularize. DO NOT USE TIME SKIP.").
 SET WARPMODE TO "RAILS".
 SET WARP TO 3. //50X
 
@@ -193,12 +240,12 @@ until SHIP:altitude > 68000 {
 }
 SET WARP TO 0. //50X
 lock throttle to 0.5.
-print "Topping up the apoapsis.".
+showMessage("Topping up the apoapsis.").
 until (SHIP:APOAPSIS > target_apoapsis) {
     wait 0.1.
 }
 lock throttle to 0.
-print "Apoapsis topped up.".
+showMessage("Apoapsis topped up.").
 
 // *** Circularize burn ***
 // wait till you get out of the atmosphere 
@@ -206,7 +253,7 @@ print "Apoapsis topped up.".
 //
 //
 
-until SHIP:altitude > 70000 {
+until SHIP:altitude > 69000 {
     wait 0.1.
 }
 if not hasnode {
@@ -216,16 +263,10 @@ if not hasnode {
     set CIRCULARIZE to node(m_time, 0, 0, v1 - v0).
     add CIRCULARIZE.
 }
+wait 1.
 lock max_acc to SHIP:MAXTHRUST / SHIP:MASS.
 lock burn_duration to CIRCULARIZE:DELTAV:MAG / max_acc.
-
-SET WARPMODE TO "RAILS".
-SET WARP TO 3. //50X
-wait until CIRCULARIZE:ETA < burn_duration * 2.
-SET WARP TO 0. //50X
 lock STEERING to CIRCULARIZE:DELTAV:DIRECTION.
-
-
 
 // stage the burn down gradually to avoid under or over shooting
 wait until CIRCULARIZE:ETA < burn_duration * 0.5.
@@ -239,13 +280,16 @@ lock throttle to 0.1.
 
 wait until CIRCULARIZE:DELTAV:MAG < 0.1.
 lock throttle to 0.
-
-remove CIRCULARIZE.
+set SHIP:CONTROL:PILOTMAINTHROTTLE to 0.
 
 SAS ON.
-set SHIP:CONTROL:PILOTMAINTHROTTLE to 0.
- 
- 
+UNLOCK STEERING.
+UNLOCK THROTTLE.
+// make sure to unlock steering from the node before removing it
+// it causes errors.
+remove CIRCULARIZE.
+
+
 CLEARSCREEN.
 print "**************************************************".
 print "**                                              **".
@@ -281,6 +325,8 @@ print "**                                              **".
 print "**                                              **".
 print "**************************************************".
 print " ".
+wait 3.
+reboot.
  
  
 declare function getTWR
@@ -304,7 +350,7 @@ declare function activateNukes
 		}
     }.
 	IF count > 0 {
-	    print "Activating nukes.".
+	    showMessage("Activating nukes.").
 	}
 }
  
@@ -361,4 +407,3 @@ declare function getOxidizerAmount {
 		}
     }
 }
- 
