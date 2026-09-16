@@ -1,6 +1,6 @@
 parameter apoapsis_reference_point.
 parameter orbit_iterations.
-global closest_approach_time to 9999999999.
+// global closest_approach_time to 9999999999.
 if (hasTarget) {
     until false {
         if apoapsis_reference_point = "p" {
